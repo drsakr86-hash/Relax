@@ -1,31 +1,26 @@
-name: Build and Deploy Meditation App
+name: Deploy Meditation App to GitHub Pages
 
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+
+permissions:
+  contents: write   # هذا يمنح حق الدفع إلى gh-pages
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies (if any)
-        run: npm ci || echo "No package.json, skipping"
-      
+
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./          # المجلد الذي يحتوي على ملف index.html
           publish_branch: gh-pages
-          force_ord: true
+          force_orphan: true       # ✅ بدلاً من force_ord
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'deploy: تحديث تلقائي للتطبيق'
