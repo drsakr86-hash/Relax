@@ -17,13 +17,20 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Prepare web directory
+        run: |
+          mkdir -p www
+          cp -r ./* www/ 2>/dev/null || true
+          # تأكد من وجود index.html في www
+          if [ ! -f www/index.html ]; then echo "Error: index.html not found"; exit 1; fi
+
       - name: Install Capacitor
         run: |
           npm install -g @capacitor/cli
           npm install @capacitor/core @capacitor/android
 
       - name: Init Capacitor
-        run: npx cap init SerenMind com.serenmind.app --web-dir=.
+        run: npx cap init SerenMind com.serenmind.app --web-dir=www
 
       - name: Add Android
         run: npx cap add android
