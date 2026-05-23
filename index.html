@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>تأمل - منصة الصحة النفسية المتكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+<link rel="manifest" href="manifest.json">
+        :root {
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface2: #1f2937;
+            --primary: #6ee7b7;
+            --primary-dark: #34d399;
+            --text: #e5e7eb;
+            --text-dim: #9ca3af;
+            --border: #374151;
+            --glow: #10b981;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            transition: background 0.3s;
+        }
+
+        /* Dark mode only (no toggle needed, it's dark) */
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* nav bar */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #a7f3d0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn.active {
+            background: var(--surface2);
+            color: var(--primary);
+            box-shadow: 0 0 8px rgba(110,231,183,0.2);
+        }
+
+        /* cards */
+        .card {
+            background: var(--surface);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary-dark);
+            color: #0a0e17;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* breathing orb */
+        .breathing-orb {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--primary), #065f46);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        /* progress */
+        .progress-bar {
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* sound mixer */
+        .sound-track {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+
+        /* responsive */
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+            }
+            .nav-links {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="app">
+    <div class="nav-bar">
+        <div class="logo">🧘 تأمل | SerenMind</div>
+        <div class="nav-links" id="navLinks">
+            <button class="nav-btn" data-page="home">🏠 الرئيسية</button>
+            <button class="nav-btn" data-page="meditate">🌿 تأمل</button>
+            <button class="nav-btn" data-page="sleep">🌙 نوم</button>
+            <button class="nav-btn" data-page="breathe">تنفس</button>
+            <button class="nav-btn" data-page="sounds">🎵 أصوات</button>
+            <button class="nav-btn" data-page="progress">📊 تقدمي</button>
+            <button class="nav-btn" data-page="profile">👤 ملفي</button>
+        </div>
+    </div>
+
+    <div id="pageContent">
+        <!-- الصفحات سيتم تحميلها ديناميكياً -->
+    </div>
+</div>
+
+<script>
+    // ------------------- نظام الحسابات (localStorage) -------------------
+    let currentUser = null;
+    let usersDB = JSON.parse(localStorage.getItem('meditate_users') || '{}');
+    let sessionsData = {}; // { userId: { stats, moodHistory, habits, ... } }
+
+    function saveUsers() {
+        localStorage.setItem('meditate_users', JSON.stringify(usersDB));
+    }
+
+    function loadUserData(userId) {
+        let data = localStorage.getItem(`userdata_${userId}`);
+        if (data) {
+            sessionsData[userId] = JSON.parse(data);
+        } else {
+            sessionsData[userId] = {
+                totalMinutes: 0,
+                sessionsCount: 0,
+                streak: 0,
+                lastSessionDate: null,
+                moodHistory: [],
+                goals: { stress: false, sleep: false, focus: false },
+                habits: { morning: false, evening: false },
+                preferences: { darkMode: true, notifications: false }
+            };
+            saveUserData(userId);
+        }
+    }
+
+    function saveUserData(userId) {
+        localStorage.setItem(`userdata_${userId}`, JSON.stringify(sessionsData[userId]));
+    }
+
+    // تسجيل دخول بسيط
+    function login(username, password) {
+        if (usersDB[username] && usersDB[username].password === password) {
+            currentUser = username;
+            loadUserData(username);
+            renderApp();
+            return true;
+        } else if (!usersDB[username]) {
+            // تسجيل جديد
+            usersDB[username] = { password, createdAt: new Date().toISOString() };
+            saveUsers();
+            currentUser = username;
+            sessionsData[username] = {
+                totalMinutes: 0, sessionsCount: 0, streak: 0, lastSessionDate: null,
+                moodHistory: [], goals: { stress: false, sleep: false, focus: false },
+                habits: { morning: false, evening: false }, preferences: { darkMode: true, notifications: false }
+            };
+            saveUserData(username);
+            renderApp();
+            return true;
+        }
+        return false;
+    }
+
+    // إضافة جلسة تأمل
+    function addMeditationSession(minutes, moodBefore, moodAfter) {
+        if (!currentUser) return;
+        const data = sessionsData[currentUser];
+        data.totalMinutes += minutes;
+        data.sessionsCount++;
+        const today = new Date().toDateString();
+        if (data.lastSessionDate !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (data.lastSessionDate === yesterday.toDateString()) data.streak++;
+            else data.streak = 1;
+            data.lastSessionDate = today;
+        }
+        data.moodHistory.push({ date: new Date().toISOString(), before: moodBefore, after: moodAfter, minutes });
+        saveUserData(currentUser);
+        renderApp();
+    }
+
+    // تحديث العادات
+    function toggleHabit(habit) {
+        if (!currentUser) return;
+        sessionsData[currentUser].habits[habit] = !sessionsData[currentUser].habits[habit];
+        saveUserData(currentUser);
+        renderApp();
+    }
+
+    // طلب إذن الإشعارات
+    function requestNotificationPermission() {
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    }
+
+    function sendNotification(title, body) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body, icon: "https://via.placeholder.com/64" });
+        }
+    }
+
+    // إدارة الصفحات
+    let currentPage = "home";
+    function navigateTo(page) {
+        currentPage = page;
+        renderApp();
+        // تحديث active class في الأزرار
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            if (btn.dataset.page === page) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    // ---------- Web Audio Mixer (مكتبة أصوات متعددة مع خلط) ----------
+    let audioCtx = null;
+    let activeTracks = new Map(); // id -> { source, gain, bufferSource }
+    let mixerMasterGain = null;
+    let isAudioInitialized = false;
+
+    async function initAudio() {
+        if (audioCtx) return audioCtx;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        mixerMasterGain = audioCtx.createGain();
+        mixerMasterGain.gain.value = 0.5;
+        mixerMasterGain.connect(audioCtx.destination);
+        await audioCtx.resume();
+        return audioCtx;
+    }
+
+    // إنشاء ضوضاء ملونة / طبيعة
+    async function createSoundTrack(type, volume = 0.5) {
+        await initAudio();
+        const ctx = audioCtx;
+        const bufferSize = ctx.sampleRate * 6;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        // توليد حسب النوع
+        switch(type) {
+            case 'rain': for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*0.3 * (Math.sin(i*0.02)*0.5+0.5); break;
+            case 'ocean': for(let i=0;i<bufferSize;i++) data[i] = Math.sin(i*0.01)*0.2 + (Math.random()-0.5)*0.2; break;
+            case 'forest': for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*0.15 * (0.7+0.3*Math.sin(i*0.005)); break;
+            case 'fire': for(let i=0;i<bufferSize;i++) data[i] = (Math.random()<0.03?Math.random()*0.8:Math.random()*0.1)*(Math.random()*2-1); break;
+            case 'wind': for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*0.2 * Math.sin(i*0.0005); break;
+            case 'white': for(let i=0;i<bufferSize;i++) data[i] = Math.random()*2-1; break;
+            case 'brown': let last=0; for(let i=0;i<bufferSize;i++) { let white=Math.random()*2-1; last = (last + white*0.02)/1.02; data[i]=last*0.8; } break;
+            case 'lofi': for(let i=0;i<bufferSize;i++) data[i] = Math.sin(i*0.02)*0.3 + (Math.random()-0.5)*0.1; break;
+            default: for(let i=0;i<bufferSize;i++) data[i] = Math.random()*2-1;
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        src.loop = true;
+        const gain = ctx.createGain();
+        gain.gain.value = volume;
+        src.connect(gain);
+        gain.connect(mixerMasterGain);
+        src.start();
+        return { src, gain };
+    }
+
+    async function playTrack(id, type, volume) {
+        await initAudio();
+        if (activeTracks.has(id)) {
+            const { src, gain } = activeTracks.get(id);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.2);
+            setTimeout(() => { try{ src.stop(); }catch(e){} activeTracks.delete(id); }, 300);
+        }
+        const track = await createSoundTrack(type, volume);
+        activeTracks.set(id, track);
+    }
+
+    function setTrackVolume(id, vol) {
+        if (activeTracks.has(id)) activeTracks.get(id).gain.gain.value = vol;
+    }
+
+    function setMasterVolume(vol) {
+        if (mixerMasterGain) mixerMasterGain.gain.value = vol;
+    }
+
+    // ---------- مؤقت متقدم ----------
+    let activeTimer = null;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    function startTimer(seconds, onComplete) {
+        if (timerInterval) clearInterval(timerInterval);
+        timerSeconds = seconds;
+        timerInterval = setInterval(() => {
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                if (onComplete) onComplete();
+                sendNotification("انتهى التأمل", "لقد أكملت جلستك بنجاح ✨");
+            } else {
+                timerSeconds--;
+                // تحديث العرض في واجهة المستخدم
+                const timerElement = document.getElementById('activeTimerDisplay');
+                if(timerElement) {
+                    let mins = Math.floor(timerSeconds/60);
+                    let secs = timerSeconds%60;
+                    timerElement.innerText = `${mins}:${secs.toString().padStart(2,'0')}`;
+                }
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    // ---------- جلسات التأمل الموجهة (نصوص) ----------
+    const guidedSessions = [
+        { title: "وعي التنفس (مبتدئ)", duration: 5, script: ["ركز على شهيقك... زفير بطيء...", "اشعر بجسمك يهدأ..."] },
+        { title: "مسح الجسد (متوسط)", duration: 10, script: ["أرخِ قدميك... ركبتيك... وركيك..."] },
+        { title: "تأمل المحبة", duration: 8, script: ["أرسل حبًا لنفسك... ثم لمن حولك..."] }
+    ];
+
+    // ------------------- RENDER MAIN PAGES -------------------
+    function renderHome() {
+        if (!currentUser) return `<div class="card"><h2>مرحباً 👋</h2><p>سجل دخولك لبدء رحلتك نحو الهدوء</p>
+        <input type="text" id="loginUsername" placeholder="اسم المستخدم" style="padding:0.5rem; margin:0.5rem 0; width:100%">
+        <input type="password" id="loginPassword" placeholder="كلمة المرور" style="padding:0.5rem; margin:0.5rem 0; width:100%">
+        <button id="doLogin" class="btn-primary">دخول / حساب جديد</button></div>`;
+        const data = sessionsData[currentUser];
+        return `
+        <div class="grid-2">
+            <div class="card"><h3>📊 إحصائيات اليوم</h3><div class="stat-number">${data.totalMinutes}</div><span>إجمالي دقائق التأمل</span><div class="progress-bar mt-2"><div class="progress-fill" style="width:${Math.min(100, (data.totalMinutes%1000)/10)}%"></div></div><p>🔥 streak: ${data.streak} يوم</p></div>
+            <div class="card"><h3>🎯 هدف اليوم</h3><p>تأمل 10 دقائق</p><button id="quickMeditate" class="btn-secondary">ابدأ تأمل سريع (5د)</button></div>
+        </div>
+        <div class="card"><h3>اقتراحات حسب مزاجك</h3><div id="moodSuggestions"></div></div>`;
+    }
+
+    function renderMeditate() {
+        if (!currentUser) return `<div class="card">الرجاء تسجيل الدخول أولاً</div>`;
+        return `
+        <div class="card"><h2>🌿 جلسة تأمل</h2>
+        <select id="sessionType"><option value="guided">موجه</option><option value="silent">صامت</option><option value="breath">تنفس</option><option value="quick">سريع 3د</option></select>
+        <div id="sessionConfig"></div>
+        <button id="startSessionBtn" class="btn-primary">ابدأ الجلسة</button>
+        <div id="sessionPlayer" style="margin-top:1rem;"></div>
+        </div>`;
+    }
+
+    function renderSleep() {
+        return `<div class="card"><h2>😴 قصص النوم & أصوات هادئة</h2>
+        <p>اختر قصة: </p><select id="sleepStory"><option value="forest">غابة ساحرة</option><option value="ocean">أمواج هادئة</option></select>
+        <button id="playSleepStory" class="btn-secondary">شغّل</button>
+        <div id="sleepTimer"><label>مؤقت إيقاف تلقائي: </label><input type="number" id="sleepMinutes" value="30"> دقيقة <button id="setSleepTimer">ضبط</button></div>
+        </div>`;
+    }
+
+    function renderBreathe() {
+        return `<div class="card" style="text-align:center"><h2>تمارين التنفس التفاعلية</h2>
+        <div class="breathing-orb" id="breathOrb"></div>
+        <select id="breathPattern"><option value="box">Box Breathing (4-4-4-4)</option><option value="478">4-7-8</option><option value="wm">Wim Hof</option></select>
+        <button id="startBreath" class="btn-primary">ابدأ</button>
+        <button id="stopBreath" class="btn-secondary">إيقاف</button>
+        </div>`;
+    }
+
+    function renderSounds() {
+        const tracks = ['rain','ocean','forest','fire','wind','white','brown','lofi'];
+        let html = `<div class="card"><h2>🎧 خلاط الأصوات</h2><div>مستوى رئيسي: <input type="range" id="masterVol" min="0" max="1" step="0.01" value="0.5"></div>`;
+        tracks.forEach(t => {
+            html += `<div class="sound-track"><span>${t}</span><input type="range" id="vol_${t}" min="0" max="1" step="0.01" value="0" data-track="${t}"><button class="playSoundBtn" data-track="${t}">▶️</button></div>`;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    function renderProgress() {
+        if(!currentUser) return `<div class="card">سجل دخولك لعرض التقدم</div>`;
+        const data = sessionsData[currentUser];
+        let moodHtml = `<ul>`;
+        data.moodHistory.slice(-10).forEach(m => moodHtml += `<li>${new Date(m.date).toLocaleDateString()}: قبل ${m.before} → بعد ${m.after} (${m.minutes} دقائق)</li>`);
+        moodHtml += `</ul>`;
+        return `<div class="card"><h2>📈 إحصائيات متقدمة</h2>
+        <p>إجمالي الجلسات: ${data.sessionsCount}</p><p>إجمالي الدقائق: ${data.totalMinutes}</p>
+        <p>أطول سلسلة: ${data.streak} يوم</p>
+        <h3>تتبع المزاج</h3>${moodHtml}
+        <div class="card"><h3>العادات اليومية</h3><label><input type="checkbox" id="habitMorning" ${data.habits.morning ? 'checked' : ''}> روتين صباحي</label>
+        <label><input type="checkbox" id="habitEvening" ${data.habits.evening ? 'checked' : ''}> روتين مسائي</label>
+        <button id="saveHabits" class="btn-secondary">حفظ</button></div>
+        </div>`;
+    }
+
+    function renderProfile() {
+        if(!currentUser) return `<div class="card">تسجيل الدخول</div>`;
+        const data = sessionsData[currentUser];
+        return `<div class="card"><h2>👤 ${currentUser}</h2>
+        <h3>الأهداف الشخصية</h3>
+        <label><input type="checkbox" id="goalStress" ${data.goals.stress ? 'checked' : ''}> تقليل التوتر</label>
+        <label><input type="checkbox" id="goalSleep" ${data.goals.sleep ? 'checked' : ''}> تحسين النوم</label>
+        <label><input type="checkbox" id="goalFocus" ${data.goals.focus ? 'checked' : ''}> زيادة التركيز</label>
+        <button id="saveGoals" class="btn-secondary">حفظ الأهداف</button>
+        <button id="logoutBtn" class="btn-secondary">تسجيل الخروج</button>
+        </div>`;
+    }
+
+    // ربط الأحداث
+    function attachEvents() {
+        // تسجيل دخول
+        const loginBtn = document.getElementById('doLogin');
+        if(loginBtn) {
+            loginBtn.onclick = () => {
+                const username = document.getElementById('loginUsername').value;
+                const pass = document.getElementById('loginPassword').value;
+                if(username && pass) login(username, pass);
+            };
+        }
+        // جلسة تأمل
+        const startSess = document.getElementById('startSessionBtn');
+        if(startSess) {
+            startSess.onclick = () => {
+                const type = document.getElementById('sessionType').value;
+                let duration = 5;
+                if(type === 'guided') duration = 5;
+                if(type === 'silent') duration = 10;
+                if(type === 'quick') duration = 3;
+                // قبل الجلسة
+                let moodBefore = prompt('كيف تشعر قبل التأمل؟ (1-5)') || 3;
+                startTimer(duration*60, () => {
+                    let moodAfter = prompt('كيف تشعر بعد التأمل؟ (1-5)') || 3;
+                    addMeditationSession(duration, moodBefore, moodAfter);
+                    alert('تم تسجيل الجلسة!');
+                });
+                document.getElementById('sessionPlayer').innerHTML = `<div>جلسة جارية... <span id="activeTimerDisplay">${duration}:00</span></div>`;
+            };
+        }
+        // التنفس
+        const breathOrb = document.getElementById('breathOrb');
+        let breathInterval = null;
+        document.getElementById('startBreath')?.addEventListener('click', () => {
+            const pattern = document.getElementById('breathPattern').value;
+            let phases = pattern === 'box' ? [4,4,4,4] : [4,7,8];
+            let i=0;
+            breathInterval = setInterval(() => {
+                let phase = phases[i%phases.length];
+                if(i%2===0) { breathOrb.style.transform = 'scale(1.4)'; sendNotification('شهيق', 'خذ نفساً عميقاً'); }
+                else { breathOrb.style.transform = 'scale(1)'; sendNotification('زفير', 'أخرج ببطء'); }
+                i++;
+            }, phase*1000);
+        });
+        document.getElementById('stopBreath')?.addEventListener('click', () => clearInterval(breathInterval));
+        // الأصوات
+        document.querySelectorAll('.playSoundBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const track = btn.dataset.track;
+                const volSlider = document.getElementById(`vol_${track}`);
+                const vol = parseFloat(volSlider.value);
+                await playTrack(track, track, vol);
+            };
+        });
+        document.querySelectorAll('input[id^="vol_"]').forEach(slider => {
+            slider.oninput = (e) => {
+                const track = e.target.dataset.track;
+                setTrackVolume(track, parseFloat(e.target.value));
+            };
+        });
+        document.getElementById('masterVol')?.addEventListener('input', (e) => setMasterVolume(parseFloat(e.target.value)));
+        // عادات وأهداف
+        document.getElementById('saveHabits')?.addEventListener('click', () => {
+            if(currentUser) {
+                sessionsData[currentUser].habits.morning = document.getElementById('habitMorning').checked;
+                sessionsData[currentUser].habits.evening = document.getElementById('habitEvening').checked;
+                saveUserData(currentUser);
+            }
+        });
+        document.getElementById('saveGoals')?.addEventListener('click', () => {
+            if(currentUser) {
+                sessionsData[currentUser].goals.stress = document.getElementById('goalStress').checked;
+                sessionsData[currentUser].goals.sleep = document.getElementById('goalSleep').checked;
+                sessionsData[currentUser].goals.focus = document.getElementById('goalFocus').checked;
+                saveUserData(currentUser);
+            }
+        });
+        document.getElementById('logoutBtn')?.addEventListener('click', () => { currentUser = null; renderApp(); });
+        // نوم
+        document.getElementById('playSleepStory')?.addEventListener('click', async () => {
+            const story = document.getElementById('sleepStory').value;
+            await playTrack('sleepStory', 'ocean', 0.3);
+            const minutes = parseInt(document.getElementById('sleepMinutes')?.value || 30);
+            setTimeout(() => {
+                if(activeTracks.has('sleepStory')) setTrackVolume('sleepStory', 0);
+                sendNotification('وقت النوم', 'تم إيقاف الصوت تلقائياً');
+            }, minutes*60000);
+        });
+    }
+
+    async function renderApp() {
+        const container = document.getElementById('pageContent');
+        let html = '';
+        switch(currentPage) {
+            case 'home': html = renderHome(); break;
+            case 'meditate': html = renderMeditate(); break;
+            case 'sleep': html = renderSleep(); break;
+            case 'breathe': html = renderBreathe(); break;
+            case 'sounds': html = renderSounds(); break;
+            case 'progress': html = renderProgress(); break;
+            case 'profile': html = renderProfile(); break;
+            default: html = renderHome();
+        }
+        container.innerHTML = html;
+        attachEvents();
+        // طلب الإشعارات أول مرة
+        if (Notification.permission !== 'granted' && Notification.permission !== 'denied') requestNotificationPermission();
+        // إظهار حالة المستخدم في الركن
+        if(currentUser) {
+            let statusDiv = document.createElement('div');
+            statusDiv.style.position = 'fixed'; statusDiv.style.bottom = '10px'; statusDiv.style.left = '10px';
+            statusDiv.style.background = '#111827'; statusDiv.style.padding = '4px 12px'; statusDiv.style.borderRadius = '20px';
+            statusDiv.innerText = `مرحباً ${currentUser}`;
+            if(!document.getElementById('userStatusBadge')) { statusDiv.id = 'userStatusBadge'; document.body.appendChild(statusDiv); }
+        } else {
+            let badge = document.getElementById('userStatusBadge'); if(badge) badge.remove();
+        }
+    }
+
+    // بدء التطبيق
+    renderApp();
+    // إعداد التنقل
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => navigateTo(e.target.dataset.page));
+    });
+    // تشغيل الصوت عند أول تفاعل
+    document.body.addEventListener('click', async () => { if(audioCtx && audioCtx.state === 'suspended') await audioCtx.resume(); }, { once: true });
+</script>
+</body>
+</html>
