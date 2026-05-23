@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SerenMind — استرخِ</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Amiri:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--surface:#0f1520;--surface2:#18212f;
+  --primary:#7ecfcf;--primary2:#a8e6cf;--green:#34d399;
+  --text:#c8ddd9;--dim:#4a7a7a;--soft:#d4e9e2;
+  --border:rgba(126,207,207,0.13);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+#starCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.aurora::before,.aurora::after{content:'';position:absolute;border-radius:50%;filter:blur(130px);animation:drift 18s ease-in-out infinite alternate;}
+.aurora::before{width:700px;height:500px;background:radial-gradient(ellipse,rgba(42,157,143,.12),transparent 70%);top:-100px;left:-100px;}
+.aurora::after{width:600px;height:600px;background:radial-gradient(ellipse,rgba(38,70,83,.1),transparent 70%);bottom:-150px;right:-100px;animation-delay:-9s;animation-duration:22s;}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.15)}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;padding:.7rem 1rem;background:rgba(7,9,15,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.logo{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.nav-links{display:flex;gap:.25rem;flex-wrap:wrap;}
+.nbtn{background:transparent;border:1px solid transparent;color:var(--dim);padding:.35rem .75rem;border-radius:2rem;cursor:pointer;font-size:.8rem;font-family:'Tajawal',sans-serif;transition:all .2s;white-space:nowrap;}
+.nbtn:hover{color:var(--text);}
+.nbtn.on{background:rgba(126,207,207,.1);border-color:rgba(126,207,207,.3);color:var(--primary);}
+.ubadge{font-size:.75rem;color:var(--dim);padding:.25rem .7rem;border:1px solid var(--border);border-radius:20px;display:none;}
+
+/* LAYOUT */
+.page{position:relative;z-index:10;max-width:760px;margin:0 auto;padding:1.2rem 1rem 4rem;}
+
+/* CARD */
+.card{background:var(--surface);border-radius:1.4rem;padding:1.3rem;margin-bottom:1.1rem;border:1px solid var(--border);}
+.card h2,.card h3{color:var(--soft);margin-bottom:.7rem;font-weight:500;}
+.lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:.9rem;display:block;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;}
+
+/* BUTTONS */
+.btn{border:none;padding:.65rem 1.3rem;border-radius:2rem;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:.88rem;transition:all .2s;}
+.btn-g{background:var(--green);color:#071010;font-weight:700;}
+.btn-g:hover{opacity:.85;transform:translateY(-1px);}
+.btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-s:hover{border-color:var(--primary);color:var(--primary);}
+.btn-o{background:transparent;border:1px solid rgba(126,207,207,.35);color:var(--primary);letter-spacing:1px;}
+.btn-o:hover{background:rgba(126,207,207,.08);box-shadow:0 0 20px rgba(126,207,207,.12);transform:translateY(-2px);}
+
+/* INPUTS */
+input[type=text],input[type=password],input[type=number],select{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  padding:.5rem .85rem;border-radius:.75rem;width:100%;font-family:'Tajawal',sans-serif;font-size:.88rem;outline:none;transition:border .2s;}
+input:focus,select:focus{border-color:var(--primary);}
+input[type=range]{width:100%;accent-color:var(--primary);cursor:pointer;}
+label{display:flex;align-items:center;gap:.5rem;margin:.35rem 0;cursor:pointer;font-size:.88rem;}
+input[type=checkbox]{accent-color:var(--primary);width:15px;height:15px;}
+
+/* PROGRESS */
+.pbar{height:5px;background:rgba(126,207,207,.08);border-radius:4px;overflow:hidden;margin:.4rem 0;}
+.pfill{height:100%;background:linear-gradient(to right,var(--primary2),var(--primary));border-radius:4px;transition:width .9s linear;}
+.statnum{font-size:1.9rem;font-weight:700;color:var(--primary);}
+
+/* ORB */
+.orb-wrap{position:relative;width:190px;height:190px;margin:0 auto;}
+.orip{position:absolute;border-radius:50%;border:1px solid rgba(126,207,207,.13);animation:rip 4s ease-in-out infinite;}
+.orip:nth-child(1){inset:-22px;}.orip:nth-child(2){inset:-42px;animation-delay:1.3s;opacity:.6;}.orip:nth-child(3){inset:-62px;animation-delay:2.6s;opacity:.3;}
+@keyframes rip{0%,100%{transform:scale(1);opacity:inherit}50%{transform:scale(1.05);opacity:0}}
+.orb{width:190px;height:190px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(168,230,207,.55),rgba(126,207,207,.28) 40%,rgba(42,157,143,.1) 70%,transparent);box-shadow:0 0 60px rgba(126,207,207,.15);transition:transform 4s ease-in-out;cursor:pointer;}
+.orb-in{width:66px;height:66px;border-radius:50%;background:radial-gradient(circle,rgba(200,245,220,.7),rgba(126,207,207,.3));filter:blur(8px);margin:62px auto 0;}
+
+/* SOUNDS */
+.srow{display:flex;align-items:center;gap:.6rem;padding:.55rem .75rem;border-radius:.75rem;background:var(--surface2);border:1px solid transparent;margin:.35rem 0;transition:border .2s;}
+.srow.on{border-color:rgba(126,207,207,.3);}
+.sicon{font-size:1.2rem;width:26px;text-align:center;}
+.sname{width:46px;font-size:.78rem;color:var(--dim);}
+.bars{display:flex;gap:2px;height:12px;align-items:flex-end;width:24px;}
+.bars span{display:block;width:3px;background:var(--primary);border-radius:2px;animation:bar .7s ease-in-out infinite alternate;}
+.bars span:nth-child(1){height:5px;animation-delay:.0s}.bars span:nth-child(2){height:10px;animation-delay:.15s}.bars span:nth-child(3){height:7px;animation-delay:.3s}.bars span:nth-child(4){height:12px;animation-delay:.1s}
+@keyframes bar{from{transform:scaleY(.3)}to{transform:scaleY(1.2)}}
+@keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* MOOD BUTTONS */
+.mbtn{background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:.5rem .9rem;cursor:pointer;color:var(--dim);font-family:'Tajawal',sans-serif;font-size:.82rem;display:inline-flex;align-items:center;gap:.35rem;transition:all .25s;}
+.mbtn:hover{border-color:rgba(126,207,207,.3);color:var(--text);}
+.mbtn.on{background:rgba(126,207,207,.1);border-color:var(--primary);color:var(--soft);}
+.mrow{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;}
+
+/* TIMER RING */
+.tring{position:relative;width:115px;height:115px;margin:0 auto;}
+.tring svg{transform:rotate(-90deg);position:absolute;inset:0;}
+.tdisp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:1.6rem;color:var(--soft);}
+.tpres{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin:.5rem 0;}
+.tp{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--dim);font-family:'Tajawal',sans-serif;font-size:.78rem;padding:.35rem .8rem;cursor:pointer;transition:.25s;}
+.tp.on,.tp:hover{border-color:var(--primary);color:var(--primary);}
+
+/* MED TABS */
+.mtabs{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-bottom:1rem;}
+.mtab{background:transparent;border:1px solid var(--border);border-radius:50px;color:var(--dim);font-family:'Tajawal',sans-serif;font-size:.78rem;padding:.4rem .9rem;cursor:pointer;transition:all .25s;}
+.mtab:hover{color:var(--text);}
+.mtab.on{background:rgba(126,207,207,.1);border-color:var(--primary);color:var(--soft);}
+.mpanel{display:none;flex-direction:column;align-items:center;gap:1rem;}
+.mpanel.show{display:flex;}
+
+/* BODY SVG */
+.bhl{transition:fill .65s,filter .65s;}
+.bhl.lit{fill:rgba(126,207,207,.48)!important;filter:drop-shadow(0 0 7px rgba(126,207,207,.65));}
+
+/* SLEEP */
+.sc{background:var(--surface2);border:1px solid var(--border);border-radius:1rem;padding:.9rem;cursor:pointer;transition:all .25s;text-align:center;}
+.sc:hover,.sc.on{border-color:var(--primary);background:rgba(126,207,207,.07);}
+.sico{font-size:2.2rem;display:block;margin-bottom:.35rem;}
+
+/* HABIT ROW */
+.habrow{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);}
+
+/* MISC */
+.tc{text-align:center;} .mt1{margin-top:.5rem;} .mt2{margin-top:1rem;}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.page{animation:fadeup .4s ease both;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:rgba(126,207,207,.18);border-radius:2px;}
+@media(max-width:560px){.nbtn{font-size:.72rem;padding:.3rem .55rem;}}
+</style>
+</head>
+<body>
+<canvas id="starCanvas"></canvas>
+<div class="aurora"></div>
+
+<nav class="nav" id="mainNav">
+  <div class="logo">🧘 SerenMind</div>
+  <div class="nav-links">
+    <button class="nbtn on"  data-p="home">🏠 الرئيسية</button>
+    <button class="nbtn" data-p="breathe">🌬 تنفس</button>
+    <button class="nbtn" data-p="meditate">🔮 تأمل</button>
+    <button class="nbtn" data-p="sounds">🎵 أصوات</button>
+    <button class="nbtn" data-p="sleep">🌙 نوم</button>
+    <button class="nbtn" data-p="progress">📊 تقدمي</button>
+    <button class="nbtn" data-p="profile">👤 ملفي</button>
+  </div>
+  <span class="ubadge" id="ubadge"></span>
+</nav>
+
+<div class="page" id="root"></div>
+
+<script>
+/* ─────────────────────────────────────
+   USER / DATA
+───────────────────────────────────── */
+var CU = null; // current user
+var DB = JSON.parse(localStorage.getItem('sm_u')||'{}');
+var UD = {}; // user data cache
+
+function loadUD(u){
+  var s=localStorage.getItem('sm_d_'+u);
+  UD[u]=s?JSON.parse(s):{totalMinutes:0,sessionsCount:0,streak:0,lastDate:null,moodHistory:[],goals:{stress:false,sleep:false,focus:false},habits:{morning:false,evening:false}};
+}
+function saveUD(){ if(CU) localStorage.setItem('sm_d_'+CU,JSON.stringify(UD[CU])); }
+
+function doLogin(u,p){
+  if(!u||!p){alert('أدخل الاسم وكلمة المرور');return;}
+  if(!DB[u]){DB[u]={pw:p,at:new Date().toISOString()};localStorage.setItem('sm_u',JSON.stringify(DB));}
+  else if(DB[u].pw!==p){alert('كلمة المرور خطأ');return;}
+  CU=u; loadUD(u); localStorage.setItem('sm_lu',u);
+  var b=document.getElementById('ubadge'); if(b){b.textContent='👤 '+u;b.style.display='';}
+  go('home');
+}
+function doLogout(){
+  CU=null; localStorage.removeItem('sm_lu');
+  var b=document.getElementById('ubadge'); if(b)b.style.display='none';
+  go('home');
+}
+function addSession(mins,before,after){
+  if(!CU)return;
+  var d=UD[CU]; d.totalMinutes+=mins; d.sessionsCount++;
+  var today=new Date().toDateString();
+  if(d.lastDate!==today){var y=new Date();y.setDate(y.getDate()-1);d.streak=(d.lastDate===y.toDateString())?d.streak+1:1;d.lastDate=today;}
+  d.moodHistory.push({date:new Date().toISOString(),before:+before,after:+after,minutes:mins});
+  saveUD();
+}
+
+/* ─────────────────────────────────────
+   ROUTER
+───────────────────────────────────── */
+var PAGE = 'home';
+function go(p){
+  PAGE=p;
+  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-p')===p);});
+  var root=document.getElementById('root');
+  if(!root)return;
+  var html='';
+  if(p==='home')    html=pgHome();
+  else if(p==='breathe')  html=pgBreathe();
+  else if(p==='meditate') html=pgMeditate();
+  else if(p==='sounds')   html=pgSounds();
+  else if(p==='sleep')    html=pgSleep();
+  else if(p==='progress') html=pgProgress();
+  else if(p==='profile')  html=pgProfile();
+  else html=pgHome();
+  root.innerHTML=html;
+  root.style.animation='none';
+  root.offsetHeight; // reflow
+  root.style.animation='fadeup .4s ease both';
+  bindPage(p);
+}
+
+/* ─────────────────────────────────────
+   PAGES HTML
+───────────────────────────────────── */
+function pgHome(){
+  if(!CU){
+    return '<div class="card" style="max-width:380px;margin:2rem auto;text-align:center">'
+      +'<p style="font-size:3rem;margin-bottom:.3rem">🧘</p>'
+      +'<h2 style="color:var(--soft);font-family:\'Amiri\',serif;margin-bottom:.4rem">مرحباً بك</h2>'
+      +'<p style="color:var(--dim);font-size:.88rem;margin-bottom:1.2rem;line-height:1.7">سجّل دخولك لحفظ تقدمك، أو استكشف مباشرة</p>'
+      +'<input type="text" id="lu" placeholder="اسم المستخدم" style="text-align:center"><br>'
+      +'<input type="password" id="lp" placeholder="كلمة المرور" style="margin-top:.5rem;text-align:center"><br>'
+      +'<button class="btn btn-g" id="loginBtn" style="width:100%;margin-top:.8rem">دخول / حساب جديد</button>'
+      +'<div style="display:flex;gap:.5rem;margin-top:.9rem;justify-content:center;flex-wrap:wrap">'
+      +'<button class="btn btn-s" onclick="go(\'breathe\')">🌬 تنفس</button>'
+      +'<button class="btn btn-s" onclick="go(\'sounds\')">🎵 أصوات</button>'
+      +'<button class="btn btn-s" onclick="go(\'meditate\')">🔮 تأمل</button>'
+      +'</div></div>';
+  }
+  var d=UD[CU];
+  var today=new Date().toDateString();
+  var tm=d.moodHistory.filter(function(m){return new Date(m.date).toDateString()===today;}).reduce(function(a,m){return a+m.minutes;},0);
+  var pct=Math.min(100,(d.totalMinutes%600)/6);
+  return '<div class="grid2">'
+    +'<div class="card"><span class="lbl">إحصائياتك</span>'
+    +'<div class="statnum">'+d.totalMinutes+'</div>'
+    +'<span style="color:var(--dim);font-size:.82rem">دقيقة تأمل</span>'
+    +'<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div>'
+    +'<p style="margin-top:.5rem;font-size:.85rem">🔥 <b>'+d.streak+'</b> يوم متواصل &nbsp;|&nbsp; 🧘 <b>'+d.sessionsCount+'</b> جلسة</p>'
+    +'</div>'
+    +'<div class="card"><span class="lbl">اليوم</span>'
+    +'<p style="color:var(--dim);font-size:.85rem;margin-bottom:.8rem">تأملت <b style="color:var(--primary)">'+tm+'</b> دقيقة اليوم</p>'
+    +'<button class="btn btn-o" onclick="go(\'breathe\')">ابدأ تمرين تنفس</button>'
+    +'</div></div>'
+    +'<div class="card"><span class="lbl">اقتراح بحسب مزاجك</span>'
+    +'<div class="mrow" id="hmood">'
+    +['😰 قلق','😔 حزين','😐 محايد','🙂 بخير','😌 هادئ'].map(function(m){
+      return '<button class="mbtn" onclick="suggestMood(this,\''+m+'\')" >'+m+'</button>';
+    }).join('')
+    +'</div><div id="msugg" style="margin-top:.7rem;font-size:.85rem;color:var(--dim)"></div>'
+    +'</div>';
+}
+function suggestMood(el,m){
+  document.querySelectorAll('#hmood .mbtn').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  var mp={'😰 قلق':'جرّب تمرين التنفس 4-7-8 لتهدئة الجهاز العصبي','😔 حزين':'استمع لأصوات الطبيعة وأعطِ نفسك وقتاً للراحة','😐 محايد':'جلسة تأمل صامت 5 دقائق تعيد التركيز','🙂 بخير':'ممتاز! حافظ على هذه الطاقة بتأمل الامتنان','😌 هادئ':'أنت في مكانك الصحيح — تأمل المندالا مثالي الآن'};
+  var el2=document.getElementById('msugg'); if(el2) el2.innerHTML='<span style="color:var(--primary)">💡</span> '+(mp[m]||'');
+}
+
+function pgBreathe(){
+  return '<div class="card tc">'
+    +'<span class="lbl">تمرين التنفس</span>'
+    +'<select id="bpat" style="max-width:220px;margin-bottom:1rem">'
+    +'<option value="box">Box Breathing (4-4-4-4)</option>'
+    +'<option value="478">تنفس 4-7-8</option>'
+    +'<option value="wh">Wim Hof (2-2-4)</option>'
+    +'<option value="basic">أساسي (4-5)</option>'
+    +'</select>'
+    +'<div class="orb-wrap">'
+    +'<div class="orip"></div><div class="orip"></div><div class="orip"></div>'
+    +'<div class="orb" id="borb"><div class="orb-in"></div></div>'
+    +'</div>'
+    +'<p id="blbl" style="font-family:\'Amiri\',serif;font-size:1.4rem;color:var(--primary);min-height:38px;margin:.4rem 0;transition:opacity .4s"></p>'
+    +'<p id="brnd" style="font-size:.78rem;color:var(--dim)">جاهز للبدء</p>'
+    +'<div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem">'
+    +'<button class="btn btn-g" id="bstart">ابدأ</button>'
+    +'<button class="btn btn-s" id="bstop">إعادة</button>'
+    +'</div></div>';
+}
+
+function pgMeditate(){
+  return '<div class="card">'
+    +'<span class="lbl">التأمل الموجَّه</span>'
+    +'<div class="mtabs">'
+    +'<button class="mtab on" data-mt="guided">📖 موجه</button>'
+    +'<button class="mtab" data-mt="mandala">🔮 مندالا</button>'
+    +'<button class="mtab" data-mt="body">🧘 مسح الجسم</button>'
+    +'<button class="mtab" data-mt="visual">🌅 تخيّل</button>'
+    +'</div>'
+
+    // GUIDED
+    +'<div class="mpanel show" id="mp-guided">'
+    +'<select id="gsel" style="max-width:260px">'
+    +'<option value="0">وعي التنفس (5د)</option>'
+    +'<option value="1">مسح الجسد (10د)</option>'
+    +'<option value="2">تأمل الامتنان (8د)</option>'
+    +'</select>'
+    +'<p id="gtxt" style="font-family:\'Amiri\',serif;font-size:1rem;color:var(--text);text-align:center;opacity:.85;line-height:1.8;max-width:340px;min-height:52px">اختر جلسة واضغط ابدأ</p>'
+    +'<div class="pbar" style="width:100%;max-width:340px"><div class="pfill" id="gfill"></div></div>'
+    +'<div id="gmcap" style="display:none;text-align:center">'
+    +'<p style="margin:.4rem 0;font-size:.85rem">كيف تشعر الآن؟ (1-5)</p>'
+    +'<div class="mrow">'
+    +[1,2,3,4,5].map(function(n){return '<button class="mbtn" onclick="capM('+n+')">'+n+'</button>';}).join('')
+    +'</div></div>'
+    +'<div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center">'
+    +'<button class="btn btn-g" id="gstart">ابدأ الجلسة</button>'
+    +'<button class="btn btn-s" id="gstop">إيقاف</button>'
+    +'</div></div>'
+
+    // MANDALA
+    +'<div class="mpanel" id="mp-mandala">'
+    +'<svg viewBox="0 0 220 220" width="200" height="200" xmlns="http://www.w3.org/2000/svg"><style>@keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>'
+    +'<defs><filter id="mg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>'
+    +'<g style="transform-origin:110px 110px;animation:spinSlow 30s linear infinite"><circle cx="110" cy="110" r="90" fill="none" stroke="rgba(126,207,207,0.07)" stroke-width="1"/><circle cx="110" cy="110" r="74" fill="none" stroke="rgba(126,207,207,0.04)" stroke-width=".5" stroke-dasharray="4 7"/></g>'
+    +'<g style="transform-origin:110px 110px;animation:spinSlow 20s linear infinite reverse"><circle cx="110" cy="110" r="55" fill="none" stroke="rgba(168,230,207,0.09)" stroke-width="1"/></g>'
+    +'<g style="transform-origin:110px 110px;animation:spinSlow 45s linear infinite"><circle cx="110" cy="110" r="30" fill="none" stroke="rgba(126,207,207,0.14)" stroke-width="1"/></g>'
+    +'<g id="mpetals"></g>'
+    +'<circle cx="110" cy="110" r="7" fill="rgba(168,230,207,0.65)" filter="url(#mg)"/>'
+    +'<circle cx="110" cy="110" r="3" fill="rgba(255,255,255,0.85)"/>'
+    +'</svg>'
+    +'<p id="mtxt" style="font-family:\'Amiri\',serif;font-size:.95rem;color:var(--text);text-align:center;opacity:.8;max-width:310px;line-height:1.8;min-height:50px">ركّز نظرك على المركز… دع أفكارك تتلاشى…</p>'
+    +'<div class="pbar" style="width:100%;max-width:300px"><div class="pfill" id="mfill"></div></div>'
+    +'<button class="btn btn-o" id="mstart">ابدأ التأمل</button>'
+    +'</div>'
+
+    // BODY
+    +'<div class="mpanel" id="mp-body">'
+    +'<div style="display:flex;gap:1.2rem;align-items:center;width:100%;max-width:390px">'
+    +'<svg viewBox="0 0 80 160" width="70" height="140" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<ellipse id="bsh" class="bhl" cx="40" cy="14" rx="13" ry="13" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsn" class="bhl" x="35" y="26" width="10" height="10" rx="4" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsla" class="bhl" x="4" y="36" width="10" height="50" rx="5" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsra" class="bhl" x="66" y="36" width="10" height="50" rx="5" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsc" class="bhl" x="18" y="35" width="44" height="30" rx="8" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsab" class="bhl" x="20" y="63" width="40" height="26" rx="7" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsll" class="bhl" x="17" y="87" width="18" height="55" rx="7" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<rect id="bsrl" class="bhl" x="45" y="87" width="18" height="55" rx="7" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<ellipse id="bslf" class="bhl" cx="26" cy="148" rx="9" ry="6" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'<ellipse id="bsrf" class="bhl" cx="54" cy="148" rx="9" ry="6" fill="rgba(126,207,207,0.1)" stroke="rgba(126,207,207,0.18)" stroke-width="1"/>'
+    +'</svg>'
+    +'<div style="flex:1">'
+    +'<p id="bstxt" style="font-family:\'Amiri\',serif;font-size:.88rem;color:var(--text);line-height:1.8;min-height:80px;opacity:.85">اضغط ابدأ لبدء رحلة الاسترخاء…</p>'
+    +'<div id="bsdots" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:.5rem"></div>'
+    +'</div></div>'
+    +'<div class="pbar" style="width:100%;max-width:340px"><div class="pfill" id="bsfill"></div></div>'
+    +'<button class="btn btn-o" id="bsstart">ابدأ مسح الجسم</button>'
+    +'</div>'
+
+    // VISUAL
+    +'<div class="mpanel" id="mp-visual">'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;width:100%">'
+    +'<div class="sc on" data-sc="beach">🏖️<br><small>شاطئ</small></div>'
+    +'<div class="sc" data-sc="forest">🌲<br><small>غابة</small></div>'
+    +'<div class="sc" data-sc="mountain">🏔️<br><small>جبل</small></div>'
+    +'<div class="sc" data-sc="cosmos">🌌<br><small>فضاء</small></div>'
+    +'</div>'
+    +'<canvas id="vcan" width="340" height="155" style="border-radius:10px;border:1px solid var(--border);width:100%;max-width:400px"></canvas>'
+    +'<p id="vtxt" style="font-family:\'Amiri\',serif;font-size:.9rem;color:var(--text);text-align:center;opacity:.8;max-width:310px;line-height:1.8">أغمض عينيك… تخيّل نفسك على شاطئ دافئ…</p>'
+    +'<button class="btn btn-o" id="vstart">ابدأ التخيّل</button>'
+    +'</div>'
+    +'</div>'; // close .card
+}
+
+function pgSounds(){
+  var tracks=[['rain','🌧️','مطر'],['ocean','🌊','بحر'],['forest','🌿','غابة'],['fire','🔥','نار'],['wind','🍃','ريح'],['night','🌙','ليل'],['white','〰️','أبيض'],['brown','🟤','بني'],['lofi','🎸','لوفي']];
+  var rows=tracks.map(function(t){
+    return '<div class="srow" id="sr_'+t[0]+'">'
+      +'<span class="sicon">'+t[1]+'</span>'
+      +'<span class="sname">'+t[2]+'</span>'
+      +'<input type="range" min="0" max="1" step="0.01" value="0" data-tid="'+t[0]+'" class="svol">'
+      +'<div class="bars" id="sb_'+t[0]+'" style="display:none"><span></span><span></span><span></span><span></span></div>'
+      +'</div>';
+  }).join('');
+  return '<div class="card">'
+    +'<span class="lbl">خلّاط الأصوات</span>'
+    +'<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--surface2);border-radius:.7rem;margin-bottom:.8rem">'
+    +'<span>🔊</span><input type="range" min="0" max="1" step="0.01" value="0.7" id="mastervol" style="flex:1">'
+    +'<span style="font-size:.75rem;color:var(--dim)">رئيسي</span>'
+    +'</div>'
+    +'<p style="font-size:.78rem;color:var(--dim);text-align:center;margin-bottom:.6rem">اسحب المؤشر لتشغيل وضبط كل صوت</p>'
+    +rows
+    +'<button class="btn btn-s" id="stopall" style="width:100%;margin-top:.7rem">⏹ إيقاف الكل</button>'
+    +'</div>';
+}
+
+function pgSleep(){
+  var stories=[['ocean','🌊','أمواج هادئة','استمع لنبض البحر… موجة تأتي وتذهب… جسمك يثقل…'],['forest','🌲','غابة ساحرة','أنت في غابة هادئة… صوت الريح بين الأشجار…'],['rain','🌧️','مطر على النافذة','قطرات المطر… إيقاع هادئ… دافئ في سريرك… نامِ بسلام…'],['night','🌙','ليلة صيفية','نجوم تملأ السماء… صرصار يغرّد… نسيم لطيف…']];
+  var cards=stories.map(function(s,i){
+    return '<div class="sc'+(i===0?' on':'')+'" data-sid="'+s[0]+'" onclick="selStory(this,\''+s[0]+'\',\''+s[3]+'\')">'
+      +'<span class="sico">'+s[1]+'</span><b>'+s[2]+'</b></div>';
+  }).join('');
+  return '<div class="card">'
+    +'<span class="lbl">قصص النوم</span>'
+    +'<div class="grid2" style="margin-bottom:1rem">'+cards+'</div>'
+    +'<p id="stxt" style="font-family:\'Amiri\',serif;font-size:.95rem;text-align:center;color:var(--text);opacity:.8;line-height:2;min-height:52px">'+stories[0][3]+'</p>'
+    +'<div style="display:flex;gap:.6rem;justify-content:center;margin-top:.9rem">'
+    +'<button class="btn btn-g" id="splay">▶ تشغيل</button>'
+    +'<button class="btn btn-s" id="sstop">⏹ إيقاف</button>'
+    +'</div></div>'
+    +'<div class="card">'
+    +'<span class="lbl">مؤقت إيقاف تلقائي</span>'
+    +'<div class="tpres">'
+    +'<button class="tp" onclick="setSleepTimer(15,this)">15 د</button>'
+    +'<button class="tp" onclick="setSleepTimer(30,this)">30 د</button>'
+    +'<button class="tp" onclick="setSleepTimer(45,this)">45 د</button>'
+    +'<button class="tp" onclick="setSleepTimer(60,this)">60 د</button>'
+    +'</div>'
+    +'<p id="stimlbl" style="text-align:center;font-size:.78rem;color:var(--dim);margin-top:.4rem">اختر مدة الإيقاف التلقائي</p>'
+    +'</div>';
+}
+
+function pgProgress(){
+  if(!CU) return '<div class="card tc"><p style="color:var(--dim)">سجّل دخولك لعرض تقدمك</p></div>';
+  var d=UD[CU];
+  var rows=d.moodHistory.slice(-10).reverse().map(function(m){
+    var dt=new Date(m.date).toLocaleDateString('ar');
+    var ch=m.after-m.before; var ar=ch>0?'↑':ch<0?'↓':'→'; var cl=ch>0?'var(--primary)':ch<0?'#f87171':'var(--dim)';
+    return '<div style="display:flex;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid var(--border);font-size:.82rem">'
+      +'<span style="color:var(--dim)">'+dt+'</span><span>'+m.before+' '+ar+' '+m.after+'</span><span style="color:'+cl+'">'+m.minutes+'د</span></div>';
+  }).join('')||'<p style="color:var(--dim);text-align:center;font-size:.82rem">لا توجد جلسات بعد</p>';
+  return '<div class="grid2">'
+    +'<div class="card tc"><span class="lbl">إجمالي</span><div class="statnum">'+d.totalMinutes+'</div><span style="color:var(--dim);font-size:.78rem">دقيقة تأمل</span></div>'
+    +'<div class="card tc"><span class="lbl">التواصل</span><div style="font-size:2rem">🔥</div><div class="statnum">'+d.streak+'</div><span style="color:var(--dim);font-size:.78rem">يوم متواصل</span></div>'
+    +'</div>'
+    +'<div class="card"><span class="lbl">تتبع المزاج</span>'+rows+'</div>'
+    +'<div class="card"><span class="lbl">العادات اليومية</span>'
+    +'<div class="habrow"><span>☀️ روتين صباحي</span><input type="checkbox" id="hm" '+(d.habits.morning?'checked':'')+'></div>'
+    +'<div class="habrow"><span>🌙 روتين مسائي</span><input type="checkbox" id="he" '+(d.habits.evening?'checked':'')+'></div>'
+    +'<button class="btn btn-s" id="savehab" style="width:100%;margin-top:.7rem">حفظ العادات</button>'
+    +'</div>';
+}
+
+function pgProfile(){
+  if(!CU) return '<div class="card tc"><p style="color:var(--dim)">سجّل دخولك أولاً</p></div>';
+  var d=UD[CU]; var at=new Date(DB[CU].at).toLocaleDateString('ar');
+  return '<div class="card tc">'
+    +'<p style="font-size:2.5rem">👤</p>'
+    +'<h2 style="color:var(--soft);margin:.3rem 0">'+CU+'</h2>'
+    +'<p style="color:var(--dim);font-size:.8rem;margin-bottom:1rem">عضو منذ '+at+'</p>'
+    +'<div style="display:flex;justify-content:space-around">'
+    +'<div><div class="statnum" style="font-size:1.4rem">'+d.sessionsCount+'</div><div style="font-size:.72rem;color:var(--dim)">جلسة</div></div>'
+    +'<div><div class="statnum" style="font-size:1.4rem">'+d.totalMinutes+'</div><div style="font-size:.72rem;color:var(--dim)">دقيقة</div></div>'
+    +'<div><div class="statnum" style="font-size:1.4rem">'+d.streak+'</div><div style="font-size:.72rem;color:var(--dim)">يوم🔥</div></div>'
+    +'</div></div>'
+    +'<div class="card"><span class="lbl">أهدافي</span>'
+    +'<label><input type="checkbox" id="gs" '+(d.goals.stress?'checked':'')+'>تقليل التوتر والقلق</label>'
+    +'<label><input type="checkbox" id="gsl" '+(d.goals.sleep?'checked':'')+'>تحسين جودة النوم</label>'
+    +'<label><input type="checkbox" id="gf" '+(d.goals.focus?'checked':'')+'>زيادة التركيز</label>'
+    +'<button class="btn btn-s" id="savegoals" style="width:100%;margin-top:.7rem">حفظ الأهداف</button>'
+    +'</div>'
+    +'<div class="card tc"><button class="btn btn-s" onclick="doLogout()">تسجيل الخروج</button></div>';
+}
+
+/* ─────────────────────────────────────
+   BIND PAGE EVENTS
+───────────────────────────────────── */
+function bindPage(p){
+  if(p==='home'){
+    var lb=document.getElementById('loginBtn');
+    if(lb) lb.onclick=function(){doLogin(document.getElementById('lu').value.trim(),document.getElementById('lp').value);};
+    ['lu','lp'].forEach(function(id){var el=document.getElementById(id);if(el)el.onkeydown=function(e){if(e.key==='Enter')doLogin(document.getElementById('lu').value.trim(),document.getElementById('lp').value);};});
+  }
+  if(p==='breathe') bindBreathe();
+  if(p==='meditate') bindMeditate();
+  if(p==='sounds') bindSounds();
+  if(p==='sleep') bindSleep();
+  if(p==='progress'){
+    var sh=document.getElementById('savehab');
+    if(sh)sh.onclick=function(){if(!CU)return;UD[CU].habits.morning=document.getElementById('hm').checked;UD[CU].habits.evening=document.getElementById('he').checked;saveUD();sh.textContent='✓ تم';setTimeout(function(){sh.textContent='حفظ العادات';},1500);};
+  }
+  if(p==='profile'){
+    var sg=document.getElementById('savegoals');
+    if(sg)sg.onclick=function(){if(!CU)return;UD[CU].goals.stress=document.getElementById('gs').checked;UD[CU].goals.sleep=document.getElementById('gsl').checked;UD[CU].goals.focus=document.getElementById('gf').checked;saveUD();sg.textContent='✓ تم';setTimeout(function(){sg.textContent='حفظ الأهداف';},1500);};
+  }
+}
+
+/* ─────────────────────────────────────
+   BREATHE
+───────────────────────────────────── */
+var BP={box:[{n:'استنشق',d:4},{n:'احتفظ',d:4},{n:'أخرج',d:4},{n:'استرح',d:4}],'478':[{n:'استنشق',d:4},{n:'احتفظ',d:7},{n:'أخرج',d:8}],wh:[{n:'استنشق',d:2},{n:'أخرج',d:2},{n:'احتفظ',d:4}],basic:[{n:'استنشق',d:4},{n:'أخرج',d:5}]};
+var bRunning=false,bPhase=0,bRound=0,bTmr=null;
+function bindBreathe(){
+  document.getElementById('bstart').onclick=function(){bRunning?stopBreath():startBreath();};
+  document.getElementById('bstop').onclick=stopBreath;
+}
+function startBreath(){
+  bRunning=true;bPhase=0;bRound=0;
+  var s=document.getElementById('bstart');if(s){s.textContent='إيقاف';s.className='btn btn-s';}
+  runBPhase();
+}
+function stopBreath(){
+  bRunning=false;clearTimeout(bTmr);
+  var s=document.getElementById('bstart');if(s){s.textContent='ابدأ';s.className='btn btn-g';}
+  var l=document.getElementById('blbl');if(l){l.style.opacity='0';}
+  var o=document.getElementById('borb');if(o){o.style.transition='transform 1s';o.style.transform='scale(1)';}
+  var r=document.getElementById('brnd');if(r)r.textContent='جاهز للبدء';
+}
+function runBPhase(){
+  if(!bRunning)return;
+  var pat=BP[document.getElementById('bpat').value]||BP.box;
+  var ph=pat[bPhase%pat.length];
+  var orb=document.getElementById('borb'),lbl=document.getElementById('blbl'),rnd=document.getElementById('brnd');
+  if(!orb||!lbl)return;
+  var sc=(ph.n==='استنشق'||ph.n==='احتفظ')?1.22:1.0;
+  orb.style.transition='transform '+(ph.d*1000)+'ms ease-in-out';
+  orb.style.transform='scale('+sc+')';
+  lbl.style.opacity='0';
+  setTimeout(function(){if(lbl){lbl.textContent=ph.n;lbl.style.opacity='1';}},200);
+  if(bPhase>0&&bPhase%pat.length===0)bRound++;
+  if(rnd)rnd.textContent='الجولة: '+(bRound+1);
+  bPhase++;
+  bTmr=setTimeout(runBPhase,ph.d*1000);
+}
+
+/* ─────────────────────────────────────
+   MEDITATE
+───────────────────────────────────── */
+var GS=[
+  {dur:5,steps:['أغمض عينيك… خذ ثلاثة أنفاس عميقة…','ركّز على شعور الهواء يدخل أنفك…','كلما شرد ذهنك، عُد بلطف للتنفس…','أنت حاضر هنا الآن… في هذه اللحظة…','أنهِ جلستك ببطء وامتنان ✨']},
+  {dur:10,steps:['أرخِ قدميك… ثم كاحليك…','انتقل للساقين… الركبتين… الفخذين…','استرخِ البطن… الصدر… الكتفين…','أرخِ عضلات الوجه… الفك… العينين…','جسمك كاملاً يرتاح الآن ✨']},
+  {dur:8,steps:['فكّر في شيء تشكر عليه اليوم…','تذكر شخصاً أضاف شيئاً لحياتك…','اشعر بالدفء في قلبك تجاه هذه النعمة…','أرسل المحبة لنفسك ولمن حولك…','اِحمِل هذا الشعور معك ✨']},
+];
+var gRunning=false,gStep=0,gIdx=0,gTmr=null,gMoodB=3;
+var MS=[{t:'أغمض عينيك… خذ ثلاثة أنفاس عميقة…',d:8000},{t:'افتح عينيك ببطء… ركّز على المركز…',d:10000},{t:'دع الدوران يملأ بصرك… لا شيء سواه…',d:12000},{t:'إذا شرد ذهنك، عُد للمركز بهدوء…',d:12000},{t:'تنفّس بعمق… أنت حاضر تمامًا…',d:10000},{t:'ابقَ هنا… هادئًا… في سلام تام…',d:12000},{t:'رائع ✨ انتهت جلستك.',d:5000}];
+var mRunning=false,mStep=0,mTmr=null;
+var BPARTS=[{ids:['bsh'],t:'لاحظ رأسك وجبهتك… أرخِ كل توتر في الوجه…'},{ids:['bsn'],t:'رقبتك… أرخِ عضلات الرقبة والكتفين…'},{ids:['bsla','bsra'],t:'ذراعاك… أرخِهما حتى أطراف الأصابع…'},{ids:['bsc'],t:'صدرك… اشعر بتنفسك يرفعه وينزله…'},{ids:['bsab'],t:'بطنك… دعه يسترخي مع كل زفير…'},{ids:['bsll','bsrl'],t:'ساقاك… ثقيلتان ومرتاحتان تمامًا…'},{ids:['bslf','bsrf'],t:'قدماك… أرخِ كل إصبع… الأرض تسندك…'}];
+var bsRunning=false,bsStep=0,bsTmr=null;
+var visRunning=false,visSc='beach',visT=0,visRaf=null;
+var VD={beach:'أنت على شاطئ دافئ… الرمال تحت قدميك… اسمع الأمواج…',forest:'أنت في غابة ساحرة… الأشجار تحيط بك… تنفّس الهواء النقي…',mountain:'قمة الجبل… السحاب تحتك… سماء صافية…',cosmos:'أنت تطفو في الفضاء… النجوم تحيط بك… صمت عميق…'};
+
+function bindMeditate(){
+  // tab switching
+  document.querySelectorAll('.mtab').forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll('.mtab').forEach(function(t){t.classList.remove('on');});
+      document.querySelectorAll('.mpanel').forEach(function(p){p.classList.remove('show');});
+      tb.classList.add('on');
+      var id='mp-'+tb.getAttribute('data-mt');
+      var panel=document.getElementById(id);
+      if(panel)panel.classList.add('show');
+      if(tb.getAttribute('data-mt')==='mandala') setTimeout(buildPetals,30);
+    };
+  });
+  buildPetals();
+  // guided
+  var gs=document.getElementById('gstart');if(gs)gs.onclick=function(){gRunning?stopGuided():startGuided();};
+  var gstop=document.getElementById('gstop');if(gstop)gstop.onclick=stopGuided;
+  // mandala
+  var ms=document.getElementById('mstart');if(ms)ms.onclick=toggleMandala;
+  // body scan
+  var bs=document.getElementById('bsstart');if(bs)bs.onclick=toggleBodyScan;
+  buildBsDots();
+  // vis
+  var vs=document.getElementById('vstart');if(vs)vs.onclick=toggleVis;
+  document.querySelectorAll('[data-sc]').forEach(function(el){
+    el.onclick=function(){
+      document.querySelectorAll('[data-sc]').forEach(function(e){e.classList.remove('on');});
+      el.classList.add('on'); visSc=el.getAttribute('data-sc');
+      var vt=document.getElementById('vtxt');if(vt)vt.textContent=VD[visSc]||'';
+    };
+  });
+}
+
+// GUIDED
+function startGuided(){
+  gIdx=parseInt(document.getElementById('gsel').value)||0;
+  gRunning=true;gStep=0;
+  var s=document.getElementById('gstart');if(s){s.textContent='إيقاف';s.className='btn btn-s';}
+  if(CU){var mc=document.getElementById('gmcap');if(mc)mc.style.display='block';}
+  runGStep();
+}
+function stopGuided(){
+  gRunning=false;clearTimeout(gTmr);
+  var s=document.getElementById('gstart');if(s){s.textContent='ابدأ الجلسة';s.className='btn btn-g';}
+  var f=document.getElementById('gfill');if(f)f.style.width='0%';
+}
+function runGStep(){
+  if(!gRunning)return;
+  var sc=GS[gIdx];
+  if(gStep>=sc.steps.length){gRunning=false;var s=document.getElementById('gstart');if(s){s.textContent='ابدأ الجلسة';s.className='btn btn-g';}if(CU)showAfterMood();return;}
+  var t=document.getElementById('gtxt');if(t){t.style.opacity='0';setTimeout(function(){if(t){t.textContent=sc.steps[gStep];t.style.transition='opacity .5s';t.style.opacity='1';}},300);}
+  var f=document.getElementById('gfill');if(f)f.style.width=(((gStep+1)/sc.steps.length)*100)+'%';
+  gStep++;gTmr=setTimeout(runGStep,8000);
+}
+function capM(n){gMoodB=n;document.querySelectorAll('#gmcap .mbtn').forEach(function(b,i){b.classList.toggle('on',i===n-1);});var mc=document.getElementById('gmcap');if(mc)mc.style.display='none';}
+function showAfterMood(){
+  var mc=document.getElementById('gmcap');if(!mc)return;
+  mc.innerHTML='<p style="margin:.4rem 0;font-size:.85rem">كيف تشعر بعد الجلسة؟</p><div class="mrow">'
+    +[1,2,3,4,5].map(function(n){return '<button class="mbtn" onclick="finishG('+n+')">'+n+'</button>';}).join('')+'</div>';
+  mc.style.display='block';
+}
+function finishG(after){
+  addSession(GS[gIdx].dur,gMoodB,after);
+  var mc=document.getElementById('gmcap');if(mc)mc.style.display='none';
+  var t=document.getElementById('gtxt');if(t){t.textContent='أحسنت! تم تسجيل جلستك ✨';t.style.color='var(--primary)';}
+}
+
+// MANDALA PETALS
+function buildPetals(){
+  var g=document.getElementById('mpetals');if(!g)return;g.innerHTML='';
+  [[82,12,'rgba(126,207,207,0.18)'],[52,8,'rgba(168,230,207,0.15)'],[28,6,'rgba(200,240,210,0.2)']].forEach(function(r){
+    for(var i=0;i<r[1];i++){
+      var a=(i/r[1])*Math.PI*2,x=110+Math.cos(a)*r[0],y=110+Math.sin(a)*r[0];
+      var el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      el.setAttribute('cx',x);el.setAttribute('cy',y);el.setAttribute('rx',4);el.setAttribute('ry',9);
+      el.setAttribute('transform','rotate('+(((a*180/Math.PI)+90))+','+x+','+y+')');
+      el.setAttribute('fill',r[2]);g.appendChild(el);
+    }
+  });
+}
+
+// MANDALA MEDITATION
+function toggleMandala(){
+  mRunning=!mRunning;
+  var btn=document.getElementById('mstart');
+  if(mRunning){if(btn){btn.textContent='إيقاف';}mStep=0;runMStep();}
+  else{clearTimeout(mTmr);if(btn){btn.textContent='ابدأ التأمل';}var f=document.getElementById('mfill');if(f)f.style.width='0%';var t=document.getElementById('mtxt');if(t)t.textContent='ركّز نظرك على المركز… دع أفكارك تتلاشى…';}
+}
+function runMStep(){
+  if(!mRunning)return;
+  if(mStep>=MS.length){mRunning=false;var b=document.getElementById('mstart');if(b)b.textContent='ابدأ من جديد';return;}
+  var t=document.getElementById('mtxt');if(t){t.style.opacity='0';var s=MS[mStep].t;setTimeout(function(){if(t){t.textContent=s;t.style.transition='opacity .5s';t.style.opacity='.85';}},300);}
+  var f=document.getElementById('mfill');if(f)f.style.width=(((mStep+1)/MS.length)*100)+'%';
+  mTmr=setTimeout(runMStep,MS[mStep].d);mStep++;
+}
+
+// BODY SCAN
+function buildBsDots(){
+  var el=document.getElementById('bsdots');if(!el)return;el.innerHTML='';
+  BPARTS.forEach(function(_,i){var d=document.createElement('div');d.id='bsdot'+i;d.style.cssText='width:7px;height:7px;border-radius:50%;background:rgba(126,207,207,0.15);transition:all .4s';el.appendChild(d);});
+}
+function toggleBodyScan(){
+  bsRunning=!bsRunning;
+  var btn=document.getElementById('bsstart');
+  if(bsRunning){if(btn)btn.textContent='إيقاف';bsStep=0;clrBody();runBsStep();}
+  else{clearTimeout(bsTmr);clrBody();if(btn)btn.textContent='ابدأ مسح الجسم';var t=document.getElementById('bstxt');if(t)t.textContent='اضغط ابدأ لبدء رحلة الاسترخاء…';var f=document.getElementById('bsfill');if(f)f.style.width='0%';}
+}
+function clrBody(){document.querySelectorAll('.bhl').forEach(function(e){e.classList.remove('lit');});}
+function runBsStep(){
+  if(!bsRunning)return;
+  if(bsStep>=BPARTS.length){bsRunning=false;var b=document.getElementById('bsstart');if(b)b.textContent='ابدأ من جديد';var t=document.getElementById('bstxt');if(t)t.textContent='أحسنت ✨ جسمك يشعر بالراحة التامة.';return;}
+  clrBody();
+  BPARTS[bsStep].ids.forEach(function(id){var e=document.getElementById(id);if(e)e.classList.add('lit');});
+  var txt=document.getElementById('bstxt');var s=BPARTS[bsStep].t;if(txt){txt.style.opacity='0';setTimeout(function(){if(txt){txt.textContent=s;txt.style.transition='opacity .5s';txt.style.opacity='.85';}},300);}
+  var f=document.getElementById('bsfill');if(f)f.style.width=(((bsStep+1)/BPARTS.length)*100)+'%';
+  document.querySelectorAll('[id^=bsdot]').forEach(function(d,i){d.style.background=i<bsStep?'var(--primary)':i===bsStep?'var(--soft)':'rgba(126,207,207,0.15)';d.style.boxShadow=i===bsStep?'0 0 6px var(--primary)':'none';});
+  bsStep++;bsTmr=setTimeout(runBsStep,9000);
+}
+
+// VISUALIZATION
+function toggleVis(){
+  visRunning=!visRunning;
+  var btn=document.getElementById('vstart');
+  if(visRunning){if(btn)btn.textContent='إيقاف';animVis();}
+  else{if(btn)btn.textContent='ابدأ التخيّل';cancelAnimationFrame(visRaf);var c=document.getElementById('vcan');if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);}
+}
+function animVis(){
+  visT+=.008;
+  var c=document.getElementById('vcan');if(!c){visRunning=false;return;}
+  var ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  if(visSc==='beach')dBeach(ctx,W,H);
+  else if(visSc==='forest')dForest(ctx,W,H);
+  else if(visSc==='mountain')dMtn(ctx,W,H);
+  else dCosmos(ctx,W,H);
+  if(visRunning)visRaf=requestAnimationFrame(animVis);
+}
+function dBeach(ctx,W,H){var sk=ctx.createLinearGradient(0,0,0,H*.65);sk.addColorStop(0,'#1a3a5c');sk.addColorStop(1,'#e07040');ctx.fillStyle=sk;ctx.fillRect(0,0,W,H*.65);ctx.beginPath();ctx.arc(W*.72,H*.22+Math.sin(visT)*2,15,0,Math.PI*2);ctx.fillStyle='rgba(255,195,60,.9)';ctx.fill();var wa=ctx.createLinearGradient(0,H*.65,0,H*.83);wa.addColorStop(0,'#2a70a8');wa.addColorStop(1,'#183870');ctx.fillStyle=wa;ctx.fillRect(0,H*.65,W,H*.18);for(var i=0;i<3;i++){ctx.beginPath();for(var x=0;x<=W;x+=4){var y=H*.67+i*10+Math.sin((x/60)+visT*1.5+i)*4;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.strokeStyle='rgba(255,255,255,'+(0.15-i*.04)+')';ctx.lineWidth=1.5;ctx.stroke();}var sa=ctx.createLinearGradient(0,H*.83,0,H);sa.addColorStop(0,'#d4a843');sa.addColorStop(1,'#b88830');ctx.fillStyle=sa;ctx.fillRect(0,H*.83,W,H*.17);}
+function dForest(ctx,W,H){ctx.fillStyle='#060e04';ctx.fillRect(0,0,W,H);ctx.beginPath();ctx.arc(W*.8,H*.18,11,0,Math.PI*2);ctx.fillStyle='rgba(200,230,180,.5)';ctx.fill();for(var i=0;i<25;i++){var sx=(Math.sin(i*127.3)*.5+.5)*W,sy=(Math.sin(i*91.7)*.5+.5)*H*.5;ctx.beginPath();ctx.arc(sx,sy,.8,0,Math.PI*2);ctx.fillStyle='rgba(180,240,150,'+(0.2+.4*Math.abs(Math.sin(visT+i)))+')';ctx.fill();}for(var i=0;i<8;i++){var tx=(i/7)*W+Math.sin(visT*.3+i)*3,th=45+(i%4)*18;ctx.beginPath();ctx.moveTo(tx,H);ctx.lineTo(tx-18,H-th);ctx.lineTo(tx+18,H-th);ctx.fillStyle='rgba('+(15+i*4)+','+(45+i*7)+','+(12+i*3)+',.9)';ctx.fill();}for(var i=0;i<8;i++){var fx=(Math.sin(visT*.6+i*1.4)*.4+.5)*W,fy=H*.25+(Math.cos(visT*.4+i)*.35)*H*.5;ctx.beginPath();ctx.arc(fx,fy,1.8,0,Math.PI*2);ctx.fillStyle='rgba(160,255,100,'+(0.3+.5*Math.abs(Math.sin(visT*2+i)))+')';ctx.fill();}}
+function dMtn(ctx,W,H){var sk=ctx.createLinearGradient(0,0,0,H);sk.addColorStop(0,'#08001a');sk.addColorStop(.5,'#180840');sk.addColorStop(1,'#300e50');ctx.fillStyle=sk;ctx.fillRect(0,0,W,H);for(var i=0;i<60;i++){var sx=(Math.sin(i*137.5)*.5+.5)*W,sy=(Math.sin(i*71.3)*.5+.5)*H*.65;ctx.beginPath();ctx.arc(sx,sy,.7,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+(0.25+.5*Math.abs(Math.sin(visT*1.2+i)))+')';ctx.fill();}[['#140828',W*.1,H,W*.45,H*.28],['#1e1040',W*.35,H,W*.7,H*.32],['#100820',-W*.05,H,W*.55,H*.22]].forEach(function(r){ctx.beginPath();ctx.moveTo(r[1],r[2]);ctx.lineTo(r[3],r[4]);ctx.lineTo(r[1]+(r[3]-r[1])*2,r[2]);ctx.closePath();ctx.fillStyle=r[0];ctx.fill();});ctx.beginPath();ctx.moveTo(W*.38,H*.22);ctx.lineTo(W*.33,H*.36);ctx.lineTo(W*.43,H*.36);ctx.closePath();ctx.fillStyle='rgba(255,255,255,.18)';ctx.fill();}
+function dCosmos(ctx,W,H){ctx.fillStyle='#01000a';ctx.fillRect(0,0,W,H);var nb=ctx.createRadialGradient(W*.4,H*.5,0,W*.4,H*.5,W*.45);nb.addColorStop(0,'rgba(80,20,140,.18)');nb.addColorStop(.5,'rgba(20,60,140,.09)');nb.addColorStop(1,'transparent');ctx.fillStyle=nb;ctx.fillRect(0,0,W,H);for(var i=0;i<90;i++){var sx=(Math.sin(i*137.5)*.5+.5)*W,sy=(Math.sin(i*73.1)*.5+.5)*H;ctx.beginPath();ctx.arc(sx,sy,.5+Math.abs(Math.sin(i))*.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+(0.2+.45*Math.abs(Math.sin(visT+i*.3)))+')';ctx.fill();}var px=W*.74,py=H*.3+Math.sin(visT*.25)*4;var pl=ctx.createRadialGradient(px-5,py-5,0,px,py,18);pl.addColorStop(0,'rgba(90,130,200,.95)');pl.addColorStop(1,'rgba(30,50,110,.95)');ctx.beginPath();ctx.arc(px,py,18,0,Math.PI*2);ctx.fillStyle=pl;ctx.fill();ctx.beginPath();ctx.ellipse(px,py,30,7,.25,0,Math.PI*2);ctx.strokeStyle='rgba(140,170,220,.28)';ctx.lineWidth=3;ctx.stroke();}
+
+/* ─────────────────────────────────────
+   SOUNDS ENGINE
+───────────────────────────────────── */
+var AC=null,MG=null,TN={};
+function getAC(){if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=0.7;MG.connect(AC.destination);}if(AC.state==='suspended')AC.resume();return AC;}
+function mkBuf(type){
+  var ac=getAC(),sr=ac.sampleRate,buf=ac.createBuffer(2,sr*5,sr);
+  for(var ch=0;ch<2;ch++){
+    var d=buf.getChannelData(ch);
+    if(type==='rain'){var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.969*b2+w*.153852;b3=.8665*b3+w*.3104856;b4=.55*b4+w*.5329522;b5=-.7616*b5-w*.016898;d[i]=(b0+b1+b2+b3+b4+b5+w*.5362)*.11;if(Math.random()<.003)d[i]+=(Math.random()*2-1)*.4;}}
+    else if(type==='ocean'){var b0=0,b1=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.969*b1+w*.153852;d[i]=(b0+b1)*.3*(0.5+0.5*Math.sin(2*Math.PI*i/(sr*6)));}}
+    else if(type==='forest'){var b0=0,b1=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.55*b1+w*.5329522;d[i]=(b0+b1)*.05;if(Math.random()<.0002){var f=1200+Math.random()*800;for(var j=0;j<300&&(i+j)<d.length;j++)d[i+j]+=Math.sin(2*Math.PI*f*(j/sr))*(1-j/300)*.12;}}}
+    else if(type==='wind'){var b0=0,b1=0,b2=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.8665*b2+w*.3104856;d[i]=(b0+b1+b2)*.1*(0.4+0.6*Math.sin(2*Math.PI*i/(sr*3)+ch));}}
+    else if(type==='fire'){var b0=0,b1=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.8665*b1+w*.3104856;d[i]=(b0+b1)*.13;if(Math.random()<.004){var cl=Math.floor(20+Math.random()*50);for(var j=0;j<cl&&(i+j)<d.length;j++)d[i+j]+=(Math.random()*2-1)*(1-j/cl)*.45;}}}
+    else if(type==='night'){for(var i=0;i<d.length;i++){var t2=i/sr,ph=(t2*4)%1;d[i]=ph<.3?Math.sin(2*Math.PI*(4000+200*Math.sin(t2*12))*(i/sr))*(ph/.3)*.1:0;d[i]+=(Math.random()*2-1)*.008;}}
+    else if(type==='white'){for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.5;}
+    else if(type==='brown'){var last=0;for(var i=0;i<d.length;i++){var w=Math.random()*2-1;last=(last+w*.02)/1.02;d[i]=last*3;}}
+    else if(type==='lofi'){for(var i=0;i<d.length;i++)d[i]=Math.sin(i*.018)*.25+(Math.random()-.5)*.08;}
+  }
+  return buf;
+}
+function playT(id,type,vol){
+  stopT(id);
+  var ac=getAC(),src=ac.createBufferSource(),g=ac.createGain();
+  src.buffer=mkBuf(type);src.loop=true;
+  g.gain.setValueAtTime(0,ac.currentTime);
+  g.gain.linearRampToValueAtTime(parseFloat(vol),ac.currentTime+.6);
+  src.connect(g);g.connect(MG);src.start();
+  TN[id]={src:src,gain:g};
+}
+function stopT(id){if(TN[id]){try{var ac=getAC();TN[id].gain.gain.linearRampToValueAtTime(0,ac.currentTime+.35);var s=TN[id].src;setTimeout(function(){try{s.stop();}catch(e){}},400);}catch(e){}delete TN[id];}}
+function setTV(id,vol){if(TN[id])TN[id].gain.gain.setTargetAtTime(parseFloat(vol),getAC().currentTime,.05);}
+
+function bindSounds(){
+  document.querySelectorAll('.svol').forEach(function(sl){
+    sl.oninput=function(){
+      var id=sl.getAttribute('data-tid'),v=parseFloat(sl.value);
+      var row=document.getElementById('sr_'+id),bars=document.getElementById('sb_'+id);
+      if(v>0){if(!TN[id])playT(id,id,v);else setTV(id,v);if(row)row.classList.add('on');if(bars)bars.style.display='flex';}
+      else{stopT(id);if(row)row.classList.remove('on');if(bars)bars.style.display='none';}
+    };
+  });
+  var mv=document.getElementById('mastervol');if(mv)mv.oninput=function(){if(MG)MG.gain.setTargetAtTime(parseFloat(mv.value),getAC().currentTime,.05);};
+  var sa=document.getElementById('stopall');if(sa)sa.onclick=function(){document.querySelectorAll('.svol').forEach(function(sl){var id=sl.getAttribute('data-tid');stopT(id);sl.value=0;var r=document.getElementById('sr_'+id);if(r)r.classList.remove('on');var b=document.getElementById('sb_'+id);if(b)b.style.display='none';});};
+}
+
+/* ─────────────────────────────────────
+   SLEEP
+───────────────────────────────────── */
+var slStory='ocean',slTmrIv=null;
+function selStory(el,id,txt){
+  document.querySelectorAll('[data-sid]').forEach(function(e){e.classList.remove('on');});
+  el.classList.add('on');slStory=id;
+  var t=document.getElementById('stxt');if(t)t.textContent=txt;
+}
+function bindSleep(){
+  var sp=document.getElementById('splay');
+  if(sp)sp.onclick=function(){
+    if(TN['sleep']){stopT('sleep');sp.textContent='▶ تشغيل';}
+    else{playT('sleep',slStory,0.45);sp.textContent='⏸ إيقاف';}
+  };
+  var ss=document.getElementById('sstop');
+  if(ss)ss.onclick=function(){stopT('sleep');var sp2=document.getElementById('splay');if(sp2)sp2.textContent='▶ تشغيل';};
+}
+function setSleepTimer(mins,el){
+  document.querySelectorAll('.tp').forEach(function(b){b.classList.remove('on');});el.classList.add('on');
+  if(slTmrIv)clearInterval(slTmrIv);
+  var s=mins*60;
+  slTmrIv=setInterval(function(){s--;var m=Math.floor(s/60),sc=s%60,lbl=document.getElementById('stimlbl');if(lbl)lbl.textContent='يتوقف خلال '+m+':'+(sc<10?'0':'')+sc;if(s<=0){clearInterval(slTmrIv);stopT('sleep');var sp=document.getElementById('splay');if(sp)sp.textContent='▶ تشغيل';}},1000);
+}
+
+/* ─────────────────────────────────────
+   STARS
+───────────────────────────────────── */
+(function(){
+  var c=document.getElementById('starCanvas'),ctx=c.getContext('2d'),stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;stars=[];for(var i=0;i<180;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.2,a:Math.random()*Math.PI*2,sp:.003+Math.random()*.006});}
+  window.addEventListener('resize',resize);resize();
+  (function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(function(s){s.a+=s.sp;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(190,220,215,'+(0.15+.45*Math.abs(Math.sin(s.a)))+')';ctx.fill();});requestAnimationFrame(draw);})();
+})();
+
+/* ─────────────────────────────────────
+   NAV BINDING (once, permanent)
+───────────────────────────────────── */
+document.getElementById('mainNav').addEventListener('click',function(e){
+  var btn=e.target.closest('.nbtn');
+  if(btn){var p=btn.getAttribute('data-p');if(p)go(p);}
+});
+document.body.addEventListener('click',function(){if(AC&&AC.state==='suspended')AC.resume();},{once:true});
+
+/* ─────────────────────────────────────
+   INIT
+───────────────────────────────────── */
+(function(){
+  var lu=localStorage.getItem('sm_lu');
+  if(lu&&DB[lu]){CU=lu;loadUD(lu);var b=document.getElementById('ubadge');if(b){b.textContent='👤 '+lu;b.style.display='';}}
+  go('home');
+})();
+</script>
+</body>
+</html>
